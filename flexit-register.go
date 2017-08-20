@@ -1,4 +1,4 @@
-package main
+package flexitModbus
 
 import (
 	"encoding/binary"

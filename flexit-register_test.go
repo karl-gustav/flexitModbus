@@ -1,4 +1,4 @@
-package main
+package flexitModbus
 
 import (
 	"bytes"
@@ -19,21 +19,21 @@ func TestFlexitRegister(t *testing.T) {
 		Max:         50,
 	}
 
-	register.setValueFromByteArray([]byte{255, 253})
+	register.SetValueFromByteArray([]byte{255, 253})
 
 	if register.Value != -3 {
 		t.Errorf("setValueFromByteArray test value was incorrect, got: %d, want: %d.", register.Value, -3)
 	}
 
-	v := register.getValueAsByteArray()
+	v := register.GetValueAsByteArray()
 	expect := []byte{255, 253}
 
 	if !bytes.Equal(v, expect) {
 		t.Errorf("getValueAsByteArray value was incorrect, got: %d, want: %d.", v, expect)
 	}
 
-	register.setValueFromByteArray([]byte{255, 253})
-	v = register.getValueAsByteArray()
+	register.SetValueFromByteArray([]byte{255, 253})
+	v = register.GetValueAsByteArray()
 	expect = []byte{255, 253}
 
 	if !bytes.Equal(v, expect) {

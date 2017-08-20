@@ -1,4 +1,4 @@
-package main
+package flexitModbus
 
 func GetAllInputRegisters() map[string]FlexitRegister {
 	return map[string]FlexitRegister{
