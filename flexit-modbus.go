@@ -57,6 +57,14 @@ func ReadHoldingRegister(registerName string) (holdingRegister *FlexitRegister, 
 	return &register, nil
 }
 
+func GetHoldingRegister(registerName string) (holdingRegister *FlexitRegister, err error) {
+	register, found := GetAllHoldingRegisters()[registerName]
+	if !found {
+		return nil, fmt.Errorf("%v is not a holding register", registerName)
+	}
+	return &register, nil
+}
+
 func ReadInputRegister(registerName string) (inputRegister *FlexitRegister, err error) {
 	register, found := GetAllInputRegisters()[registerName]
 	if !found {
@@ -70,6 +78,14 @@ func ReadInputRegister(registerName string) (inputRegister *FlexitRegister, err 
 		return nil, err
 	}
 	register.SetValueFromByteArray(registerBytes)
+	return &register, nil
+}
+
+func GetInputRegister(registerName string) (inputRegister *FlexitRegister, err error) {
+	register, found := GetAllInputRegisters()[registerName]
+	if !found {
+		return nil, fmt.Errorf("%v is not a input register", registerName)
+	}
 	return &register, nil
 }
 
