@@ -464,7 +464,7 @@ func GetAllInputRegisters() map[string]FlexitRegister {
 			Format:      "INT 16",
 			Description: "The set air temperature used on CU",
 			Write:       false,
-			Unit:        "0.1 °C",
+			Unit:        "0.1°C",
 			Default:     200,
 			Min:         0,
 			Max:         250,
