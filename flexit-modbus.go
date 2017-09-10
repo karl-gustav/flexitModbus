@@ -3,6 +3,7 @@ package flexitModbus
 import (
 	"encoding/binary"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/goburrow/modbus"
@@ -14,6 +15,8 @@ const (
 	serialDevice      = "/dev/ttyUSB0"
 	numberOfRegisters = 49
 )
+
+var lock sync.Mutex
 
 func ReadAllHoldingRegisters() (registers map[string]WritableRegister, err error) {
 	fn := func(client modbus.Client) ([]byte, error) {
@@ -109,18 +112,20 @@ func WriteHoldingRegister(register WritableRegister) error {
 	return err
 }
 
-func registerExecutor(fn registerExecutorFunc) ([]byte, error) {
+func registerExecutor(fn registerExecutorFunc) (result []byte, err error) {
 	handler := newUsbModbusClient()
 
-	err := handler.Connect()
+	err = handler.Connect()
 	if err != nil {
-
 		return nil, fmt.Errorf("ERROR Failed to connect: %v", err)
 	}
 	defer handler.Close()
 
 	client := modbus.NewClient(handler)
-	return fn(client)
+	lock.Lock()
+	result, err = fn(client)
+	lock.Unlock()
+	return
 }
 
 func parseRegistersInto(registers []byte, register ReableRegister) {
