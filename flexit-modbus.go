@@ -15,7 +15,7 @@ const (
 	numberOfRegisters = 49
 )
 
-func ReadAllHoldingRegisters() (registers map[string]FlexitRegister, err error) {
+func ReadAllHoldingRegisters() (registers map[string]WritableRegister, err error) {
 	fn := func(client modbus.Client) ([]byte, error) {
 		return client.ReadHoldingRegisters(0, numberOfRegisters)
 	}
@@ -24,11 +24,13 @@ func ReadAllHoldingRegisters() (registers map[string]FlexitRegister, err error) 
 		return nil, err
 	}
 	registers = GetAllHoldingRegisters()
-	parseRegistersInto(bytesFromAllRegisters, registers)
+	for _, register := range registers {
+		parseRegistersInto(bytesFromAllRegisters, register)
+	}
 	return
 }
 
-func ReadAllInputRegisters() (registers map[string]FlexitRegister, err error) {
+func ReadAllInputRegisters() (registers map[string]ReableRegister, err error) {
 	fn := func(client modbus.Client) ([]byte, error) {
 		return client.ReadInputRegisters(0, numberOfRegisters)
 	}
@@ -37,62 +39,64 @@ func ReadAllInputRegisters() (registers map[string]FlexitRegister, err error) {
 		return nil, err
 	}
 	registers = GetAllInputRegisters()
-	parseRegistersInto(bytesFromAllRegisters, registers)
+	for _, register := range registers {
+		parseRegistersInto(bytesFromAllRegisters, register)
+	}
 	return
 }
 
-func ReadHoldingRegister(registerName string) (holdingRegister *FlexitRegister, err error) {
+func ReadHoldingRegister(registerName string) (holdingRegister WritableRegister, err error) {
 	register, found := GetAllHoldingRegisters()[registerName]
 	if !found {
 		return nil, fmt.Errorf("%v is not a holding register", registerName)
 	}
 	fn := func(client modbus.Client) ([]byte, error) {
-		return client.ReadHoldingRegisters(register.Address, register.GetNumberOfRegisters())
+		return client.ReadHoldingRegisters(register.GetAddress(), register.GetNumberOfRegisters())
 	}
 	registerBytes, err := registerExecutor(fn)
 	if err != nil {
 		return nil, err
 	}
 	register.SetValueFromByteArray(registerBytes)
-	return &register, nil
+	return register, nil
 }
 
-func GetHoldingRegister(registerName string) (holdingRegister *FlexitRegister, err error) {
+func GetHoldingRegister(registerName string) (holdingRegister WritableRegister, err error) {
 	register, found := GetAllHoldingRegisters()[registerName]
 	if !found {
 		return nil, fmt.Errorf("%v is not a holding register", registerName)
 	}
-	return &register, nil
+	return register, nil
 }
 
-func ReadInputRegister(registerName string) (inputRegister *FlexitRegister, err error) {
+func ReadInputRegister(registerName string) (inputRegister ReableRegister, err error) {
 	register, found := GetAllInputRegisters()[registerName]
 	if !found {
 		return nil, fmt.Errorf("%v is not a input register", registerName)
 	}
 	fn := func(client modbus.Client) ([]byte, error) {
-		return client.ReadInputRegisters(register.Address, register.GetNumberOfRegisters())
+		return client.ReadInputRegisters(register.GetAddress(), register.GetNumberOfRegisters())
 	}
 	registerBytes, err := registerExecutor(fn)
 	if err != nil {
 		return nil, err
 	}
 	register.SetValueFromByteArray(registerBytes)
-	return &register, nil
+	return register, nil
 }
 
-func GetInputRegister(registerName string) (inputRegister *FlexitRegister, err error) {
+func GetInputRegister(registerName string) (inputRegister ReableRegister, err error) {
 	register, found := GetAllInputRegisters()[registerName]
 	if !found {
 		return nil, fmt.Errorf("%v is not a input register", registerName)
 	}
-	return &register, nil
+	return register, nil
 }
 
-func WriteHoldingRegister(register FlexitRegister) error {
-	writeValue := uint16(register.Value)
+func WriteHoldingRegister(register WritableRegister) error {
+	writeValue := register.GetValueAsUInt16()
 	fn := func(client modbus.Client) ([]byte, error) {
-		return client.WriteSingleRegister(register.Address, writeValue)
+		return client.WriteSingleRegister(register.GetAddress(), writeValue)
 	}
 	bytes, err := registerExecutor(fn)
 	if err != nil {
@@ -119,14 +123,11 @@ func registerExecutor(fn registerExecutorFunc) ([]byte, error) {
 	return fn(client)
 }
 
-func parseRegistersInto(registers []byte, target map[string]FlexitRegister) {
-	for key, register := range target {
-		startIndex := register.Address * 2
-		endIndex := startIndex + register.GetNumberOfBytes()
-		registerBytes := registers[startIndex:endIndex]
-		register.SetValueFromByteArray(registerBytes)
-		target[key] = register
-	}
+func parseRegistersInto(registers []byte, register ReableRegister) {
+	startIndex := register.GetAddress() * 2
+	endIndex := startIndex + register.GetNumberOfBytes()
+	registerBytes := registers[startIndex:endIndex]
+	register.SetValueFromByteArray(registerBytes)
 	return
 }
 
