@@ -121,7 +121,7 @@ func GetAllInputRegisters() map[string]ReableRegister {
 				Format:      "INT 16",
 				Description: "Supply air temperature",
 				Write:       false,
-				Unit:        "0.1°C",
+				Unit:        "1°C",
 			},
 			Default: 20,
 			Min:     -45,
