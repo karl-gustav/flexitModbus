@@ -237,7 +237,7 @@ func (f UInt32Register) GetValueAsUInt16() uint16 {
 }
 
 func (f TemperatureRegister) GetValueAsUInt16() uint16 {
-	return uint16(f.Value)
+	return uint16(f.Value * float32(10.0))
 }
 
 func (f Int16Register) GetValue() string {
