@@ -18,7 +18,7 @@ type ReableRegister interface {
 	GetMin() string
 	GetNumberOfBytes() uint16
 	GetNumberOfRegisters() uint16
-	SetValueFromByteArray(bytes []byte)
+	SetValueFromByteArray([]byte)
 }
 
 type WritableRegister interface {
@@ -27,6 +27,7 @@ type WritableRegister interface {
 	GetValueAsUInt16() uint16
 	IsValueTooHigh() bool
 	IsValueTooLow() bool
+	SetValue(interface{}) error
 }
 
 type BaseRegister struct {
@@ -122,6 +123,46 @@ func (f *TemperatureRegister) SetValueFromByteArray(bytes []byte) {
 	f.ByteValue = byteArrayToString(bytes)
 	movedDecimalPoint := float32(byteArrayToInt16(bytes)) / float32(10)
 	f.Value = movedDecimalPoint
+}
+
+func (f *Int16Register) SetValue(value interface{}) error {
+	switch spesificValue := value.(type) {
+	case int16:
+		f.Value = spesificValue
+	default:
+		return fmt.Errorf("Invalid type used to set value: %T", spesificValue)
+	}
+	return nil
+}
+
+func (f *UInt16Register) SetValue(value interface{}) error {
+	switch spesificValue := value.(type) {
+	case uint16:
+		f.Value = spesificValue
+	default:
+		return fmt.Errorf("Invalid type used to set value: %T", spesificValue)
+	}
+	return nil
+}
+
+func (f *UInt32Register) SetValue(value interface{}) error {
+	switch spesificValue := value.(type) {
+	case uint32:
+		f.Value = spesificValue
+	default:
+		return fmt.Errorf("Invalid type used to set value: %T", spesificValue)
+	}
+	return nil
+}
+
+func (f *TemperatureRegister) SetValue(value interface{}) error {
+	switch spesificValue := value.(type) {
+	case float32:
+		f.Value = spesificValue
+	default:
+		return fmt.Errorf("Invalid type used to set value: %T", spesificValue)
+	}
+	return nil
 }
 
 func (f Int16Register) GetValueAsByteArray() []byte {
