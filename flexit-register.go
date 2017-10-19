@@ -23,7 +23,6 @@ type ReableRegister interface {
 
 type WritableRegister interface {
 	ReableRegister
-	GetValueAsByteArray() []byte
 	GetValueAsUInt16() uint16
 	IsValueTooHigh() bool
 	IsValueTooLow() bool
@@ -163,32 +162,6 @@ func (f *TemperatureRegister) SetValue(value interface{}) error {
 		return fmt.Errorf("Invalid type used to set value: %T", spesificValue)
 	}
 	return nil
-}
-
-func (f Int16Register) GetValueAsByteArray() []byte {
-	// Can use uint for int since the binary reprencentation is the same for int and uint
-	bs := make([]byte, 2)
-	binary.BigEndian.PutUint16(bs, uint16(f.Value))
-	return bs
-}
-
-func (f UInt16Register) GetValueAsByteArray() []byte {
-	bs := make([]byte, 2)
-	binary.BigEndian.PutUint16(bs, uint16(f.Value))
-	return bs
-}
-
-func (f UInt32Register) GetValueAsByteArray() []byte {
-	bs := make([]byte, 4)
-	binary.BigEndian.PutUint32(bs, uint32(f.Value))
-	return bs
-}
-
-func (f TemperatureRegister) GetValueAsByteArray() []byte {
-	bs := make([]byte, 2)
-	movedDecimalPoint := f.Value * float32(10)
-	binary.BigEndian.PutUint16(bs, uint16(movedDecimalPoint))
-	return bs
 }
 
 func (f Int16Register) IsValueTooHigh() bool {
