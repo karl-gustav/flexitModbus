@@ -12,7 +12,7 @@ import (
 type registerExecutorFunc func(client modbus.Client) ([]byte, error)
 
 const (
-	serialDevice      = "/dev/ttyUSB0"
+	serialDevice      = "/dev/ttyUSB.RS485"
 	numberOfRegisters = 49
 )
 
