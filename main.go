@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/goburrow/modbus"
 )
@@ -12,11 +11,16 @@ import (
 type registerExecutorFunc func(client modbus.Client) ([]byte, error)
 
 const (
-	serialDevice      = "/dev/ttyUSB.RS485"
 	numberOfRegisters = 49
 )
 
+var clientHandlerFactory func() *modbus.RTUClientHandler
+
 var lock sync.Mutex
+
+func Setup(rtuClientHandlerFactory func() *modbus.RTUClientHandler) {
+	clientHandlerFactory = rtuClientHandlerFactory
+}
 
 func ReadAllHoldingRegisters() (registers map[string]WritableRegister, err error) {
 	fn := func(client modbus.Client) ([]byte, error) {
@@ -113,15 +117,18 @@ func WriteHoldingRegister(register WritableRegister) error {
 }
 
 func registerExecutor(fn registerExecutorFunc) (result []byte, err error) {
-	handler := newUsbModbusClient()
+	if clientHandlerFactory == nil {
+		panic("rtuClientHandlerFactory was not set, did you forget to run the Setup() function?")
+	}
+	clientHandler := clientHandlerFactory()
 
-	err = handler.Connect()
+	err = clientHandler.Connect()
 	if err != nil {
 		return nil, fmt.Errorf("ERROR Failed to connect: %v", err)
 	}
-	defer handler.Close()
+	defer clientHandler.Close()
 
-	client := modbus.NewClient(handler)
+	client := modbus.NewClient(clientHandler)
 	lock.Lock()
 	result, err = fn(client)
 	lock.Unlock()
@@ -134,16 +141,4 @@ func parseRegistersInto(registers []byte, register ReableRegister) {
 	registerBytes := registers[startIndex:endIndex]
 	register.SetValueFromByteArray(registerBytes)
 	return
-}
-
-func newUsbModbusClient() *modbus.RTUClientHandler {
-	handler := modbus.NewRTUClientHandler(serialDevice)
-	handler.BaudRate = 9600
-	handler.DataBits = 8
-	handler.Parity = "E" // "E"ven, "O"dd, "N"o parity
-	handler.StopBits = 1
-	handler.SlaveId = 1
-	handler.Timeout = 1 * time.Second
-	// handler.Logger = log.New(os.Stdout, "", log.LstdFlags)
-	return handler
 }

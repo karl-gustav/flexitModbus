@@ -1,6 +1,0 @@
-[submodule "vendor/github.com/goburrow/modbus"]
-	path = vendor/github.com/goburrow/modbus
-	url = git@github.com:goburrow/modbus.git
-[submodule "vendor/github.com/goburrow/serial"]
-	path = vendor/github.com/goburrow/serial
-	url = git@github.com:goburrow/serial.git
